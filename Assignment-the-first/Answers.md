@@ -11,13 +11,21 @@
 | 1294_S1_L008_R4_001.fastq.gz | Read 2 | 101 | Phred 33 |
 
 2. Per-base NT distribution
-        Read 2
-    1. ![read2](https://user-images.githubusercontent.com/70485602/181601893-0cd6748c-49b4-44d8-be24-a2a91d308ffb.png)
-  Read 1 
+
+## Read 2
+
+![read2](https://user-images.githubusercontent.com/70485602/181601893-0cd6748c-49b4-44d8-be24-a2a91d308ffb.png)
+    
+## Read 1 
+
 ![read1](https://user-images.githubusercontent.com/70485602/181601914-85f10e7a-7b4b-4e64-967d-a95c8caff659.png)
-Index 2
+
+## Index 2
+
 ![index2](https://user-images.githubusercontent.com/70485602/181601934-58cf008c-19a1-4f93-82ae-ac6b850577a5.png)
-Index 1
+
+## Index 1
+
 ![index1](https://user-images.githubusercontent.com/70485602/181601960-85c4790c-cda8-4555-bd18-561a972e85af.png)
 
     2. An individual Qscore of 30 for the index reads are important for sample identification because it is important to truly get the sample that is associated with your experiment. If there is more than a chance than a 1 in 1000 chance that the nucelotide is incorrect in a sequence, that could lead to major downstream analysis issues especially if you are sequencing a new genome. For the sequence itself, I think the Qscore cutoff can be a little bit lower, but still ideally Q>30 because most genome assembly programs have some wiggle room to allow for sequences that ~almost~ match the known sequences. Also, if you have a read pair, then you can compare the reverse complement of that strand to double check the sequence! 
@@ -41,40 +49,41 @@ Each file will hold the entire record of the reads, with an edited header that h
     3. Test examples for individual functions
     4. Return statement
 
-
+``` 
 R1_array = [header,seq,+,Q]
 
-set = {known indexes}
-unknown_count = 0
-unmatched_count = 0
-match_count = 0
-Open the four fastq files and read each simultaenously
-    for each nth record of each file--> each file has an array size of 4 for each line #take each /record/ at a time
-        check that phred score for each position in index 1 and index 2 are <30 
-            if not: write to r1 and r2 unknown files with edited headers
-                edited headers = index1_revcomp(index2)
-                unknown_count+=1
-        check index 1 in set?
-            if not: send to unknown
-                edited headers = index1_revcomp(index2)
-                unknown_count+=1
-            if yes: is revcomp(index 2) in set?  #set rev comp to a variable to write it
-                if not: send to unknown
-                    edited headers = index1_revcomp(index2)
-                    unknown_count+=1
-                if yes: check index1 to revcomp(index2) matching
-                    if not: send to unmatch
-                        edited headers = index1_revcomp(index2)
-                        unmatch_count += 1
-                    if yes: write to individual matched file (labeled with index1_revcomp(index2)?)
+set = {known indexes} 
+unknown_count = 0 
+unmatched_count = 0 
+match_count = 0 
+
+Open the four fastq files and read each simultaenously 
+    for each nth record of each file--> each file has an array size of 4 for each line #take each /record/ at a time 
+        check that phred score for each position in index 1 and index 2 are <30  
+            if not: write to r1 and r2 unknown files with edited headers 
+                edited headers = index1_revcomp(index2) 
+                unknown_count+=1 
+        check index 1 in set? 
+            if not: send to unknown 
+                edited headers = index1_revcomp(index2) 
+                unknown_count+=1 
+            if yes: is revcomp(index 2) in set?  #set rev comp to a variable to write it 
+                if not: send to unknown 
+                    edited headers = index1_revcomp(index2) 
+                    unknown_count+=1 
+                if yes: check index1 to revcomp(index2) matching 
+                    if not: send to unmatch 
                         edited headers = index1_revcomp(index2) 
-                        match_count +=1 
+                        unmatch_count += 1  
+                    if yes: write to individual matched file (labeled with index1_revcomp(index2)?) 
+                        edited headers = index1_revcomp(index2)  
+                        match_count +=1  
 
 
 
 
-
-
+```
+```
 Functions: 
 
 def revcomp(seq: str): 
@@ -88,5 +97,5 @@ def convert_phred(letter: str) -> int:
     return (ord(letter)) - 33
 
 Test example: convert_phred(E) = 36
-
+```
 
