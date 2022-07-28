@@ -11,7 +11,11 @@
 | 1294_S1_L008_R4_001.fastq.gz | Read 2 | 101 | Phred 33 |
 
 2. Per-base NT distribution
-    1. Use markdown to insert your 4 histograms here.
+    1. ![read2](https://user-images.githubusercontent.com/70485602/181601893-0cd6748c-49b4-44d8-be24-a2a91d308ffb.png)
+![read1](https://user-images.githubusercontent.com/70485602/181601914-85f10e7a-7b4b-4e64-967d-a95c8caff659.png)
+![index2](https://user-images.githubusercontent.com/70485602/181601934-58cf008c-19a1-4f93-82ae-ac6b850577a5.png)
+![index1](https://user-images.githubusercontent.com/70485602/181601960-85c4790c-cda8-4555-bd18-561a972e85af.png)
+
     2. An individual Qscore of 30 for the index reads are important for sample identification because it is important to truly get the sample that is associated with your experiment. If there is more than a chance than a 1 in 1000 chance that the nucelotide is incorrect in a sequence, that could lead to major downstream analysis issues especially if you are sequencing a new genome. For the sequence itself, I think the Qscore cutoff can be a little bit lower, but still ideally Q>30 because most genome assembly programs have some wiggle room to allow for sequences that ~almost~ match the known sequences. Also, if you have a read pair, then you can compare the reverse complement of that strand to double check the sequence! 
     3. 3976613 in Index 1
        3328051 in Index 2
