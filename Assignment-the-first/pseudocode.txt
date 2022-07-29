@@ -1,0 +1,46 @@
+R1_array = [header,seq,+,Q]
+
+set = {known indexes} 
+unknown_count = 0 
+unmatched_count = 0 
+match_count = 0 
+
+Open the four fastq files and read each simultaenously 
+    for each nth record of each file--> each file has an array size of 4 for each line #take each /record/ at a time 
+        for just the phred score line:
+            check that phred score for each position in index 1 and index 2 are <30  
+                if yes: write to r1 and r2 unknown files with edited headers 
+                    edited headers = index1_revcomp(index2) 
+                    unknown_count+=1 
+        for just the sequence line: 
+            check index 1 in set? 
+                if not: send to unknown 
+                    edited headers = index1_revcomp(index2) 
+                    unknown_count+=1 
+                if yes: is revcomp(index 2) in set?  #set rev comp to a variable to write it 
+                    if not: send to unknown 
+                        edited headers = index1_revcomp(index2) 
+                        unknown_count+=1 
+                    if yes: check index1 to revcomp(index2) matching 
+                        if not: send to unmatch 
+                            edited headers = index1_revcomp(index2) 
+                            unmatch_count += 1  
+                        if yes: write to individual matched file (labeled with index1_revcomp(index2)?) 
+                            edited headers = index1_revcomp(index2)  
+                            match_count +=1  
+
+
+
+Functions: 
+
+def revcomp(seq: str): 
+    ```takes a sequence string and returns the reverse complement``` 
+    return revcomp(seq)
+
+Test example: revcomp(AAACCCTTTGGG) = CCCAAAGGGTTT
+
+def convert_phred(letter: str) -> int:
+    ```Converts a single character into a phred score```
+    return (ord(letter)) - 33
+
+Test example: convert_phred(E) = 36

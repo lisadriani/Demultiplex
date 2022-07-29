@@ -5,10 +5,10 @@
 
 | File name | label | Read length | Phred encoding |
 |---|---|---|---|
-| 1294_S1_L008_R1_001.fastq.gz | Read 1 | 101 | Phred 33 |
-| 1294_S1_L008_R2_001.fastq.gz | Index 1 | 8 | Phred 33 |
-| 1294_S1_L008_R3_001.fastq.gz | Index 2 | 8 | Phred 33 |
-| 1294_S1_L008_R4_001.fastq.gz | Read 2 | 101 | Phred 33 |
+| 1294_S1_L008_R1_001.fastq.gz | Read 1 | 101 | Phred-33 |
+| 1294_S1_L008_R2_001.fastq.gz | Index 1 | 8 | Phred-33 |
+| 1294_S1_L008_R3_001.fastq.gz | Index 2 | 8 | Phred-33 |
+| 1294_S1_L008_R4_001.fastq.gz | Read 2 | 101 | Phred-33 |
 
 2. Per-base NT distribution
 
@@ -28,27 +28,33 @@
 
 ![index1](https://user-images.githubusercontent.com/70485602/181601960-85c4790c-cda8-4555-bd18-561a972e85af.png)
 
-    2. An individual Qscore of 30 for the index reads are important for sample identification because it is important to truly get the sample that is associated with your experiment. If there is more than a chance than a 1 in 1000 chance that the nucelotide is incorrect in a sequence, that could lead to major downstream analysis issues especially if you are sequencing a new genome. For the sequence itself, I think the Qscore cutoff can be a little bit lower, but still ideally Q>30 because most genome assembly programs have some wiggle room to allow for sequences that ~almost~ match the known sequences. Also, if you have a read pair, then you can compare the reverse complement of that strand to double check the sequence! 
+    2. An individual Qscore of 30 for the index reads are important for sample identification because it is important to truly get the sample that is associated with your experiment. If there is more than a chance than a 1 in 1000 chance that the nucelotide is incorrect in a sequence, that could lead to major downstream analysis issues especially if you are sequencing a new genome. For the sequence itself, I think the Qscore cutoff can be a little bit lower, but still ideally Q>30. If you have a read pair, then you can compare the reverse complement of that strand to double check the sequence! 
     3. 3976613 in Index 1
        3328051 in Index 2
-    
+
 ## Part 2
 1. Define the problem
-When multiplexing sequences, the sequences have barcodes on either end of the DNA sequences that will allow the sequences to be sorted after to where it belongs. However, during the reaction, these barcodes could incorrectly bind and a barcode that doesn't match the sequence could bind to the sequence. These samples specifically have the same barcode on either side, so if the index/barcodes don't match on either end of the sequence, we know they were a victim of index hopping. Read 1 and Read 2 are the reverse complements of each other and Index 1 and Index 2 are also reverse compelements. 
+When multiplexing sequences, the sequences have barcodes on either end of the DNA sequences that will allow the sequences to be sorted after to where it belongs. However, during the reaction, these barcodes could incorrectly bind and a barcode that doesn't match the sequence could bind to the sequence. The samples we are working with have the same barcode on either side, so if the index/barcodes don't match on either end of the sequence, we know they were a victim of index hopping. Read 1 and Read 2 are the reverse complements of each other and Index 1 and Index 2 are also reverse complements.
+
 2. Describe output
-The output will have 24 Read 1 matched files, 24 Read 2 matched files, 1 Read 1 unmatched (known) file, 1 Read 2 unmatched (known) file, 1 Read 1 unknown file, 1 read unknown file. The 24 matched files correspond to known indexes. 
-"matched" means that index 1 and index 2 are matched to each other (and known in the our list of 24 indexes), so we know there was no index hopping
-"unmatched" means that index 1 and index 2 are in our known list of 24 indexes, but the index 1 is not the same as index 2. 
-"unknown" means that the qscore is lower than 30 and/or one/both of the indexes are not in the known list of 24 (which also means there could be an "N")
+The output will have 24 Read-1 matched files, 24 Read-2 matched files, 1 Read-1 unmatched (known) file, 1 Read-2 unmatched (known) file, 1 Read-1 unknown file, 1 Read-2 unknown file. The 24 matched files correspond to known indexes. 
+"Matched" means that index 1 and index 2 are matched to each other (and known in the our list of 24 indexes), so we know there was no index hopping
+"Unmatched" means that index 1 and index 2 are in our known list of 24 indexes, but index 1 is not the same as index 2. 
+"Unknown" means that the qscore is lower than 30 and/or one/both of the indexes are not in the known list of 24 (which also means there could be an "N")
 Each file will hold the entire record of the reads, with an edited header that has "header"+_index1_revcomp(index2). I want the reverse compelement of read 2 in the header so that when I'm using the matched files downstream, I know that the indexes are matched and which indexes there are. This will also make it easier to know exactly which file I'm looking at just by looking at the first few records in each of the files. 
+The output will also report count of records in each of the file types. This will show how many records of unknown, unmatched, and matched in each of the files. 
+
 3. Upload your [4 input FASTQ files](../TEST-input_FASTQ) and your [>=6 expected output FASTQ files](../TEST-output_FASTQ).
+
 4. Pseudocode
+
 5. High level functions. For each function, be sure to include:
     1. Description/doc string
     2. Function headers (name and parameters)
     3. Test examples for individual functions
     4. Return statement
 
+The pseudo code below is also in pseudocode.txt
 ``` 
 R1_array = [header,seq,+,Q]
 

@@ -1,0 +1,273 @@
+|--------|
+|07/26/22|
+|--------|
+Got the assignment.
+notes from explanation: 
+	Multiplexing: pooling samples together and sequencing them together
+	To separate them back out: Code. Bioinformatically 
+	Attaching a known barcode so that we can resort them 
+	Assignment the first: pseudocode
+	Develop strategy to create 48 fastq files that create acceptable pairs, 2 index hopped reads-pairs, two fat1 files with nonmatching or low quality index pairs
+	Barcodes on either side of the inserts are the same 
+	Text file on Talapas 
+	
+
+
+
+	cd /projects/bgmp/shared/2017_sequencing
+	4 histograms: 
+	X is the position (0 to {read length}
+	Y is the mean Q score (0 – 40/41)
+	What do the reads mean biologically vs downstream analysis and how that affects which quality score you want to use
+	Next question: how many N base calls are there? Challenge: use a one line command
+
+363,246,735 records in the file 1 
+How many sequences in the line?
+Head – 2 | tail -1 | wc   and then -1 for the new line character 
+
+Read the read me
+
+Part 2: 
+Write a strategy not a script! 
+
+4 fastq files: 
+1 biological: read 1
+2 index: index 1
+3 index: index 2
+4 biological : read 2
+
+
+The first reads in each file are from the same cluster in the flowcell 
+XY position for first one is 1265:1191 
+You have to parse all of the files at the same time
+Look at the indexes, if they’re the same, output the indexes and reads to each of those files
+
+
+Index4_R1.fq 
+Index4_R2.fq 
+Index6_R1.fq
+Index6_R2.fq
+
+2 fastq files for non matching reads
+So: index4 on read 1 and index 5 on read 2, probably index hopping put those reads into the hopped files
+2 additional fastq files for index reads that don’t match known indexes or read quality is low so we don’t trust it 
+52 files all together! 
+Add indexes to the end of the headers. 
+Were there indexes that hopped more often than others?
+Reverse complement function! 
+
+Part 1: 
+
+srun --account=bgmp --partition=bgmp --nodes=1 --ntasks-per-node=1 --time=00:40:00 --cpus-per-task=1 --pty bash
+
+Illumina's fastq header: 
+@<instrument>:<run number>:<flowcell ID>:<lane>:<tile>:<x-pos>:<y-pos>:<UMI> <read>:<is filtered>:<control number>:<index>
+
+To try and determine which file is the index vs the read I first did 
+ls -lah and found that the R2 and R3 are much much smaller than R1 and R4. 
+After 
+zcat <file> | head 
+
+$ zcat 1294_S1_L008_R1_001.fastq.gz | head
+@K00337:83:HJKJNBBXX:8:1101:1265:1191 1:N:0:1
+GNCTGGCATTCCCAGAGACATCAGTACCCAGTTGGTTCAGACAGTTCCTCTATTGGTTGACAAGGTCTTCATTTCTAGTGATATCAACACGGTGTCTACAA
++
+A#A-<FJJJ<JJJJJJJJJJJJJJJJJFJJJJFFJJFJJJAJJJJ-AJJJJJJJFFJJJJJJFFA-7<AJJJFFAJJJJJF<F--JJJJJJF-A-F7JJJJ
+@K00337:83:HJKJNBBXX:8:1101:1286:1191 1:N:0:1
+CNACCTGTCCCCAGCTCACAGGACAGCACACCAAAGGCGGCAACCCACACCCAGTTTTACAGCCACACAGTGCCTTGTTTTACTTGAGGACCCCCCACTCC
++
+A#AAFJJJJJJJJJJFJJJJJJJJJJJJJJJJJJJJJJJJFJJJJJJJJJJJJJJAJJJJJJJJJJJJJJFJJJJJFFFFJJJJJJJJJJJJJJJJJJ77F
+@K00337:83:HJKJNBBXX:8:1101:1347:1191 1:N:0:1
+GNGGTCTTCTACCTTTCTCTTCTTTTTTGGAGGAGTAGAATGTTGAGAGTCAGCAGTAGCCTCATCATCACTAGATGGCATTTCTTCTGAGCAAAACAGGT
+
+$ zcat 1294_S1_L008_R2_001.fastq.gz | head
+@K00337:83:HJKJNBBXX:8:1101:1265:1191 2:N:0:1
+NCTTCGAC
++
+#AA<FJJJ
+@K00337:83:HJKJNBBXX:8:1101:1286:1191 2:N:0:1
+NACAGCGA
++
+#AAAFJJJ
+@K00337:83:HJKJNBBXX:8:1101:1347:1191 2:N:0:1
+NTCCTAAG
+
+$ zcat 1294_S1_L008_R3_001.fastq.gz | head
+@K00337:83:HJKJNBBXX:8:1101:1265:1191 3:N:0:1
+NTCGAAGA
++
+#AAAAJJF
+@K00337:83:HJKJNBBXX:8:1101:1286:1191 3:N:0:1
+NCGCTGTT
++
+#AAAFJ-A
+@K00337:83:HJKJNBBXX:8:1101:1347:1191 3:N:0:1
+NTTAGGAC
+
+$ zcat 1294_S1_L008_R4_001.fastq.gz | head
+@K00337:83:HJKJNBBXX:8:1101:1265:1191 4:N:0:1
+NTTTTGATTTACCTTTCAGCCAATGAGAAGGCCGTTCATGCAGACTTTTTTAATGATTTTGAAGACCTTTTTGATGATGATGATGTCCAGTGAGGCCTCCC
++
+#AAFAFJJ-----F---7-<FA-F<AFFA-JJJ77<FJFJFJJJJJJJJJJAFJFFAJJJJJJJJFJF7-AFFJJ7F7JFJJFJ7FFF--A<A7<-A-7--
+@K00337:83:HJKJNBBXX:8:1101:1286:1191 4:N:0:1
+NTGTGTAGACAAAAGTTTTCATGAGTCTGTAAGCTGTCTATTGTCTCCTGAAAAGAAACCAGAAGTTTTCCCCTAAATGTGTTTAGAATGCTTATTCTAAT
++
+#A-AFFJJFJJJJJJJJJJJJJJJJ<JAJFJJJJF<JFJJJAJJJJJJJJJJJJJJJJJJJFJJJAJJFJJJFJJJF<JJA-JJJ-<AFAF--FF<JAFJF
+@K00337:83:HJKJNBBXX:8:1101:1347:1191 4:N:0:1
+NAAATGCCATCTAGTGATGATGAGGCTACTGCTGACTCTCAACATTCTACTCCTCCAAAAAAGAAGAGAAAGATTCCAACCCCCAGAACCGATGACCGGCA
+
+
+Its clear that R1 and R4 are read 1 and read 2. R2 and R3 are index 1 and index 2. 
+
+
+To find the read lengths: 
+
+$ zcat 1294_S1_L008_R1_001.fastq.gz | head -n 2 | tail -n 1 | wc 
+      1       1     102
+$ zcat 1294_S1_L008_R2_001.fastq.gz | head -n 2 | tail -n 1 | wc 
+      1       1       9
+$ zcat 1294_S1_L008_R3_001.fastq.gz | head -n 2 | tail -n 1 | wc 
+      1       1       9
+$ zcat 1294_S1_L008_R4_001.fastq.gz | head -n 2 | tail -n 1 | wc 
+      1       1     102
+
+and subtract 1 for the newline character. 
+
+
+To try and find the Phred score, I searched for [a-z]+ with grep so that if there were any lowercase letters, I would know its 
+Phred 64. if there are no small letters, then its Phred 33. 
+so I tried :cat 1294_S1_L008_R4_001.fastq.gz | sed -n '4~4p' | grep -E "[a-z]+" | head
+but that took forever. 
+Found that # is only in phred 33 and we definitely see # in the quality scores for these samples, so the phred encoding is 33
+
+
+
+
+
+To find mean of all qscores: 
+
+get_hist.py 
+
+
+activated bgmp_py310 and downloaded numpy and matplotlib
+
+working through issues. Ran with out a list of lists
+The outputs ending with 5*.out are because I tried to sbatch a python script lol 
+learning every day 
+get_hist.21723534.out
+get_hist.21723552.out
+get_hist.21723554.out
+
+get_hist.21723616.out bc i forgot back slashes in command. 
+get_hist.21723626.out for misspelled conda activate
+get_hist.21723630.out for missing / before usr bin time
+HAD A TON OF OUTPUT FILES that couldn't run it because I forgot ./ whoops
+Changed the output name to 
+"read1_hist.%j.out" so that it would be renamed 
+
+
+21723943      bgmp  sget.sh ladriani  R       0:28      1 n279
+21723929      bgmp  sget.sh ladriani  R       4:35      1 n279
+21723929 is running read 1
+21723943 is running index 1 
+currenlty testing to see how long it may take 
+
+Tried running them with my data from PS9. It ended up doing this: 
+
+Traceback (most recent call last):
+  File "/gpfs/projects/bgmp/ladriani/bioinfo/Bi622/Demultiplex/Assignment-the-first/./get_hist.py", line 24, in <module>
+    all_qscores = np.zeros((101,num_lines//4), dtype=int)
+numpy.core._exceptions._ArrayMemoryError: Unable to allocate 273. GiB for an array with shape (101, 363246735) and data type int64
+Command exited with non-zero status 1
+        Command being timed: "./get_hist.py -f /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz -o read1 -l 101"
+        User time (seconds): 735.10
+        System time (seconds): 3.50
+        Percent of CPU this job got: 100%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 12:18.42
+
+For both the index1 and read 1 this happened. I changed the script to pull fully from PS4 instead. PS9 information is all hashed out but still in get_hist.py
+index1_hist.21723943.out 
+read1_hist.21723929.out 
+These are related to the PS9 script, not the PS4 script. 
+
+
+Trying it again with the PS4 script! 
+index1_hist.21723943.out
+index2_hist.21725470.out
+read1_hist.21725473.out
+read2_hist.21725475.out
+
+have an hour time limit. may have to restart without time limits....
+canceled read1_hist.21725473.out and read2_hist.21725475.out and started them without time limits:
+
+read1_hist.21725505.out
+read2_hist.21725503.out
+are the new ones without time limits
+
+21725670      bgmp  sget.sh ladriani  R       0:01      1 n226
+21725669      bgmp  sget.sh ladriani  R       0:17      1 n225
+21725668      bgmp  sget.sh ladriani  R       0:40      1 n225
+21725663      bgmp  sget.sh ladriani  R       1:07      1 n225
+
+OKAY: HERE WE GO AGAIN! 
+didn't change the read length argument in the file. had to add readlength.args for the init list functions. 
+
+
+
+How many indexes have undetermined "N" base calls 
+
+zcat 1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | grep -E "N" | wc 
+3976613 3976613 35789517
+zcat 1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | grep -E "N" | wc 
+3328051 3328051 29952459
+
+
+!! jason showed me  cat `/bin/ls get_hist.*out | tail -1` will give me the most recent output file !!!
+
+|--------|
+|07/27/22|
+|--------|
+
+
+
+Looked at the results for read 1 and read2 and they're looking good! compared to others in the class and the graphs have 
+very similar dips and things! 
+
+ Command being timed: "./get_hist.py -f /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz -o read1 -l 101"
+        User time (seconds): 7617.53
+        System time (seconds): 5.14
+        Percent of CPU this job got: 98%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 2:08:24
+      Exit status: 0
+
+ Command being timed: "./get_hist.py -f /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz -o read2 -l 101"
+        User time (seconds): 7167.32
+        System time (seconds): 4.10
+        Percent of CPU this job got: 99%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 1:59:55
+        Average shared text size (kbytes): 0
+        Exit status: 0
+
+Now going to work on Part 2 with pseudo code etc. 
+
+Pseudo code looking good! Feeling good, went back and forth about including a dictionary or not, but I think what we did 
+works just well. 
+
+
+
+|--------|
+|07/28/22|
+|--------|
+
+Yesterday I created the unit tests from the first few lines of the 2017 data, adjusting the indexes to fit 8 different possibilites that my code is 
+checking for: 
+
+1. 1st index has an N 
+2. 1st index does not have N but is not in the {known indexes}
+3. Index 1 passes, index 2 has an N 
+4. Index 1 passes, index 2 is not in the {known indexes}
+5. They're both in the list but they don't match 
+6. They match and they're in the list! 
+7. Index 1 contains a q score under 30
+8. Index 2 contains a q score under 30
+
