@@ -271,3 +271,104 @@ checking for:
 7. Index 1 contains a q score under 30
 8. Index 2 contains a q score under 30
 
+
+|--------|
+|08/02/22|
+|--------|
+
+Started writing code. seems a lot harder than the pseudocode unfortunately 
+How to parse through everything at once!! no idea
+While true??
+
+TO TEST: 
+
+../the_code.py -R1 ../../TEST-input_FASTQ/R1.fastq.gz -R2 ../../TEST-input_FASTQ/R2.fastq.gz -I1 ../../TEST-input_FASTQ/I1.fastq.gz -I2 ../../TEST-input_FASTQ/I2.fastq.gz -I ../indexes.txt -l 8
+
+
+I'm pretty sure I got it written??
+I think i should be checking if something about reverse complements somewhere and maybe I'll add a write file function
+so that the code is a bit easier to look at, but I feel good!
+SO far my test files don't work so I'm going to take a look at them and rewrite them so that I have the right input/output!
+
+
+Submitted batch job 21816480 I ran it. sos. 
+
+|--------|
+|08/03/22|
+|--------|
+
+This code ended up running 15 hours before I killed it. I also noticed that it was writitng to files 
+in different rates across R1 and R2 and I'm racking my brain and I can't seem to figure out why. 
+
+Moved all files and output file to take_1 directory so that I can look through them when I have a chance. 
+
+I started a new one: Submitted batch job 21826273
+I took out checking for N, and adding a revknown set so that when checking if I2 is in the list, I don't have to
+revcomp each index, I can just compare those to the value. Hopefully that helps speed it up a bit? but I'm doubtful. 
+
+|--------|
+|08/04/22|
+|--------|
+
+output looks good. Took 16 hours 
+
+Command being timed: "./the_code.py -R1 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz -R2 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz -I1 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz -I2 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz -I indexes.txt"
+	User time (seconds): 57372.21
+	System time (seconds): 39.29
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 16:02:25
+
+	Exit status: 0
+
+
+Output in /projects/bgmp/ladriani/bioinfo/Bi622/Demultiplex/Assignment-the-third/demultiplex.21827992.out
+
+
+Got the QAA assignment: 
+Lisa	32_4G_both_S23_L008	16_3D_mbnl_S12_L008
+
+/projects/bgmp/shared/2017_sequencing/demultiplexed/32_4G_both_S23_L008_R1_001.fastq.gz
+/projects/bgmp/shared/2017_sequencing/demultiplexed/32_4G_both_S23_L008_R2_001.fastq.gz
+
+
+created QAA environment: 
+installed 
+(QAA) [ladriani@n278 QAA]$ fastqc --version
+FastQC v0.11.9
+(QAA) [ladriani@n278 Bi622]$ cutadapt --version
+4.1
+(QAA) [ladriani@n278 Bi622]$ trimmomatic -version
+0.39
+
+
+Ran cutadapt.sh to cut the adpators from the files assigned to me. 
+To check that the adaptors are not in my output files: 
+
+(QAA) [ladriani@n278 QAA]$ cat output_16.R1.fastq | grep "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"
+(QAA) [ladriani@n278 QAA]$ cat output_16.R2.fastq | grep "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"
+(QAA) [ladriani@n278 QAA]$ cat output_16.R1.fastq | grep "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"
+(QAA) [ladriani@n278 QAA]$ cat output_16.R2.fastq | grep "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"
+(QAA) [ladriani@n278 QAA]$ cat output_32.R2.fastq | grep "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"
+(QAA) [ladriani@n278 QAA]$ cat output_32.R1.fastq | grep "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"
+(QAA) [ladriani@n278 QAA]$ cat output_32.R1.fastq | grep "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"
+(QAA) [ladriani@n278 QAA]$ cat output_32.R2.fastq | grep "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"
+
+No outputs for each of these. If the adapter sequence was still there then it would have output that line. 
+
+
+Command being timed: "fastqc -o qc_out --noextract /projects/bgmp/shared/2017_sequencing/demultiplexed/32_4G_both_S23_L008_R1_001.fastq.gz /projects/bgmp/shared/2017_sequencing/demultiplexed/32_4G_both_S23_L008_R2_001.fastq.gz /projects/bgmp/shared/2017_sequencing/demultiplexed/16_3D_mbnl_S12_L008_R1_001.fastq.gz /projects/bgmp/shared/2017_sequencing/demultiplexed/16_3D_mbnl_S12_L008_R2_001.fastq.gz"
+	User time (seconds): 228.35
+	System time (seconds): 8.29
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:56.77
+	Exit status: 0
+
+Fastqc output created in qc_out folder. 
+
+
+
+|--------|
+|08/09/22|
+|--------|
+
+Haven't done anything in a few days, so I'm going to work on getting some summary information together for Demultiplex

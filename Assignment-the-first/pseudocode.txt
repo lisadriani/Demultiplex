@@ -3,11 +3,11 @@ R1_array = [header,seq,+,Q]
 set = {known indexes} 
 unknown_count = 0 
 unmatched_count = 0 
-match_count = 0 
+match_count = 0  
 
 Open the four fastq files and read each simultaenously 
     for each nth record of each file--> each file has an array size of 4 for each line #take each /record/ at a time 
-        for just the phred score line:
+        for just the phred score line:  # do this later. Check for N's first! 
             check that phred score for each position in index 1 and index 2 are <30  
                 if yes: write to r1 and r2 unknown files with edited headers 
                     edited headers = index1_revcomp(index2) 
