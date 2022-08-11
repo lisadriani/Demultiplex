@@ -86,7 +86,7 @@ def revcomp(seq):
     return rev[::-1]
         
 def write_file(filename, array_name):
-    '''takes a file name and a read number 1 or 2 and writes the record (that is saved as an array) to the open file'''
+    '''takes a file name and a read number 1 or 2 and writes a fastq record (that is saved in an array) to the open file'''
     filename.write(array_name[0]+"\n"+array_name[1]+"\n"+array_name[2]+"\n"+array_name[3]+"\n")
     return
 

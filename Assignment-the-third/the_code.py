@@ -21,6 +21,7 @@ def get_args():
 args = get_args()
  
 #Get all the known indexes and put them in a set called "known"
+#all indexes are also reverse complementd in revcomp set 
 known = set()
 revknown = set()
 with open(args.indexeslist, "r") as index:
@@ -33,7 +34,8 @@ for index in known:
 #print(revknown)
 
 
-#create a dictionary with the indexes as keys and the open file thing as the value 
+#create a dictionary with the indexes as keys and the open file thing as the value
+#this will create a dictionary for both read 1 and read 2 files so they can be written.
 fileR1 = {} #dictionary
 fileR2 = {}
 for item in known: 
@@ -56,9 +58,9 @@ unmatchedR2 = gzip.open("unmatched_R2.fastq.gz", "wt")
 #key = index_index possibility 
 #value = number of times that happened
 index_pairs = dict()
-perms = permutations(known,2)
+perms = permutations(known,2) #create a permutation of all indexes against each other
 for x,y in perms:
-    key = x+"_"+y
+    key = x+"_"+y #renaming the key to something useful  ie "Index1_index2"
     index_pairs[key] = 0
 #print(index_pairs)
 
@@ -75,14 +77,14 @@ for item in known:
 
 i = 0
 while True: 
-    r1line1 = R1.readline().strip()
+    r1line1 = R1.readline().strip() #this will take the first line, read it, strip the new line, and write it to a variable
     r2line1 = R2.readline().strip()
     i1line1 = I1.readline().strip()
     i2line1 = I2.readline().strip()
-    if r1line1 == "":
+    if r1line1 == "": #this will check if we're at the end of the file and make sure that you don't stay stuck in the while loop!
         break
-    else:
-        R1_array = np.array([r1line1,R1.readline().strip(),R1.readline().strip(),R1.readline().strip()])
+    else: #filling in a full record to an array for each file. Now we can index the records for what we need. 
+        R1_array = np.array([r1line1,R1.readline().strip(),R1.readline().strip(),R1.readline().strip()]) 
         R2_array = np.array([r2line1,R2.readline().strip(),R2.readline().strip(),R2.readline().strip()])
         I1_array = np.array([i1line1,I1.readline().strip(),I1.readline().strip(),I1.readline().strip()])
         I2_array = np.array([i2line1,I2.readline().strip(),I2.readline().strip(),I2.readline().strip()])
@@ -93,6 +95,8 @@ while True:
             print("Progress! 10,000,000 records done!")
             i = 0
         #now start checking the problems!
+
+#took out the N's as it is taken care of in the "known/revcomp" set 
 
 
         # if "N" in I1_array[1]: 
@@ -119,6 +123,7 @@ while True:
             #index1 = I1_array[1]
             #revcomp = bioinfo.revcomp(I2_array[1])
             R1_array[0] = R1_array[0]+"_"+I1_array[1]+"_"+bioinfo.revcomp(I2_array[1])
+                        #this is rewriting the header to include the indexes. 
             R2_array[0] = R2_array[0]+"_"+I1_array[1]+"_"+bioinfo.revcomp(I2_array[1])
             bioinfo.write_file(unknownR1,R1_array)
             bioinfo.write_file(unknownR2,R2_array)
@@ -140,7 +145,7 @@ while True:
             else:
             #if bioinfo.revcomp(I2_array[1]) in known:
                 if I1_array[1] != bioinfo.revcomp(I2_array[1]):
-                    for index, value in enumerate(I1_array[3]):
+                    for index, value in enumerate(I1_array[3]): #this will take the q score of each of the index BP and check if its over 30
                         Q1 = bioinfo.convert_phred(value)
                         Q2 = bioinfo.convert_phred(I2_array[3][index])
                         bool_break = False
@@ -149,7 +154,7 @@ while True:
                             R2_array[0] = R2_array[0]+"_"+I1_array[1]+"_"+bioinfo.revcomp(I2_array[1])
                             bioinfo.write_file(unknownR1,R1_array)
                             bioinfo.write_file(unknownR2,R2_array)
-                            bool_break = True
+                            bool_break = True #when its written, make sure not to check any more base pairs, with a bool break
                             unknown_count +=1
                             low_qual += 1
                             break
